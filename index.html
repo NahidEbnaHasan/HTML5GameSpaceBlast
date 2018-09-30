@@ -3,49 +3,23 @@
 <head>
 	<title>SPACE BLAST</title>
 </head>
-<body style="background: dimgray; position: fixed;">
-<div id="canvas" style="position: relative;">
-	<div id="space" style="background-color: #000000; position: relative; overflow: hidden; border: 3px solid #FFFFFF;">
-		<div style="color: #FFFFFF; position: absolute; margin-left: 1%; font-size: 20px; font-family: monospace;">
-			<span>SCORE </span>
-			<span id="score">0</span>
-		</div>
-		<div id="game-status" style="background: #FFFFFF; width: 100%; height: 100%; position: absolute; display: block;">
-			<span id="game-controls" style="color: dimgray;
-				font-size: 24px;
-				font-family: sans-serif;
-				margin-top: 15%;
-				position: absolute;
-				font-weight: bolder;">
-				ARROW-UP --- MOVE FWD<br />
-				ARROW-RIGHT --- ROTATE RIGHT<br />
-				ARROW-LEFT --- ROTATE LEFT<br />
-				SPACEBAR --- FIRE<br />
-			</span>
-			<img id="startup-image" src="images/startup.png" style="width: 530px;
-				position: absolute;
-				margin-left: 35%;
-				margin-top: 12%;
-				display: block;">
-			<button id="play-btn" style="width: 200px;
-				height: 50px;
-				color: dimgray;
-				font-family: fantasy;
-				font-size: xx-large;
-				margin-left: 80%;
-				margin-top: 18%;">PLAY</button>
-			<span id="game-over" style="color: dimgray;
-				font-size: 80px;
-				font-family: fantasy;
-				margin-top: 18%;
-				position: absolute;
-				margin-left: 30%;
-				display: none;">GAME OVER</span>
-		</div>
-		<img id="spaceship" src="images/gunship1.png" style="width: 48px; height: 48px; position: absolute; display: none;">
-		<!--img id="spacerock" src="spacerock.png" style="width: 64px; height: 64px; position: absolute;"-->
-		<img id="bullet" src="images/bullet.png" style="width: 10px; height: 10px; position: absolute; display: none;">
+<body>
+<div id="game-canvas" style="position: relative">
+	<canvas id="canvas" style="position: absolute; overflow: hidden"></canvas>
+	<div style="color: #FFFFFF; position: absolute; margin-left: 1%; font-size: 20px; font-family: monospace">
+		<span>SCORE </span>
+		<span id="score">0</span>
 	</div>
+	<div id="game-status" style="background: #FFFFFF; width: 100%; height: 100%; position: absolute; display: block;">
+		<span style="position: absolute; left: 30%; margin-top: 10%; color: white; font-size: 100px; font-family: monospace; font-weight: bold">SPACE BLAST</span>
+		<button id="play-btn" style="width: 200px; height: 50px; color: dimgray; font-family: fantasy;
+			font-size: xx-large; margin-left: 42%; margin-top: 20%;">PLAY</button>
+		<span id="game-over" style="color: dimgray; font-size: 60px; font-family: fantasy; font-weight: bold;
+			margin-top: 18%; position: absolute; margin-left: 38%; display: none; ">GAME OVER</span>
+	</div>
+	<img id="spaceship" src="images/gunship1.png" style="width: 48px; height: 48px; position: absolute; display: none;">
+	<!--img id="spacerock" src="spacerock.png" style="width: 64px; height: 64px; position: absolute;"-->
+	<img id="bullet" src="images/bullet.png" style="width: 10px; height: 10px; position: absolute; display: none;">
 </div>
 </body>
 
@@ -54,7 +28,7 @@
 	var playBtn = document.getElementById("play-btn");
 	var canvasWidth, canvasHeight, score = 0, gameRunning = false, gameEnd = false;
 	var spaceCoorX = [], spaceCoorY = [];
-	
+
 
 	var bullet;
 	var bX,bY,bSPEED = 30,bANGLE;
@@ -65,50 +39,65 @@
 	var spaceship;
 	var sX = 589, sY = 274, sSPEED = 0.0, sANGLE = -45;
 	var moveFwd = false, fire = false, steerRight = false, steerLeft = false;
-	
+
+	function getRandomInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+	function drawCanvas() {
+		canvas = document.getElementById('canvas');
+		canvasWidth = (window.innerWidth - 16);
+		canvasHeight = (window.innerHeight - 16);
+
+		canvas.setAttribute('width', canvasWidth);
+		canvas.setAttribute('height', canvasHeight);
+		if (canvas.getContext) {
+			var ctx = canvas.getContext('2d');
+
+			// ctx.fillStyle = 'rgb(200, 0, 0)';
+			// ctx.fillRect(10, 10, 50, 50);
+			//
+			// ctx.fillStyle = 'rgba(0, 0, 200, 0.5)';
+			// ctx.fillRect(30, 30, 50, 50);
+
+			ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+			ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+			for(var i = 0; i < 200; i++){
+				x = getRandomInt(0, canvasWidth);
+				y = getRandomInt(0, canvasHeight);
+				ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+				ctx.fillRect(x, y, 1, 1);
+			}
+		}
+	}
+
 
 	// SET SPACE COORDINATE FOR ROCK INIT POSITIONS
 	window.onload = function(){
-
-		//body = document.getElementsByTagName("body")[0];
-		//body.style.position = "fixed";
-
-		canvas = document.getElementById("canvas");
-		canvasWidth = window.innerWidth - 17;
-		canvasHeight = window.innerHeight - 17;
-		canvas.style.width = canvasWidth + "px";
-		canvas.style.height = canvasHeight + "px";
-
-		space = document.getElementById("space");
-		space.style.backgroundImage = "url('images/space1.jpg')";
-		//space.style.backgroundRepeat = "no-repeat";
-		space.style.width = "80%";
-		space.style.height = "80%";
-		space.style.marginLeft = "10%";
-		space.style.marginTop = "5%";
-
+		body = document.getElementsByTagName("body")[0];
+		space = document.getElementById("game-canvas");
+		drawCanvas();
 		scoreBoard = document.getElementById("score");
-
 		gameStatus = document.getElementById("game-status");
 
 		//playBtn = document.getElementById("play-btn");
 
-		for (var i = 0, j = -164 ; i < 100;i++){
+		for (var i = 0, j = -164 ; i < 100; i++){
 			spaceCoorX.push(j);
 			spaceCoorY.push(j);
 			j++;
 		}
-		for (var i = 100, j = (canvasWidth * 80 / 100), k = (canvasHeight * 80 / 100) ; i < 200;i++){
+		for (var i = 100, j = (canvasWidth * 80 / 100), k = (canvasHeight * 80 / 100) ; i < 200; i++){
 			spaceCoorX.push(parseInt(j));
 			spaceCoorY.push(parseInt(k));
 			j++;
 			k++;
 		}
-		console.log("ONLOAD");
+		// console.log("ONLOAD");
 	}
 
 	playBtn.addEventListener("click", function(){
-		console.log("GAME STARTED");
+		// console.log("GAME STARTED");
 		init_game();
 	})
 
@@ -136,7 +125,7 @@
 	}
 
 	document.onkeydown = function(event){
-		console.log(event.keyCode);
+		// console.log(event.keyCode);
 		if(event.keyCode == 37){
 			steerLeft = true;
 		}else if(event.keyCode == 39){
@@ -173,7 +162,7 @@
 		}else{
 			if(sSPEED > 0.0){
 				sSPEED -= 0.1;
-				console.log(sSPEED);
+				// console.log(sSPEED);
 				sX = sX + sSPEED * Math.cos(sANGLE * Math.PI / 180);
 				sY = sY + sSPEED * Math.sin(sANGLE * Math.PI / 180);
 			}
@@ -205,14 +194,14 @@
 	function init_rocks(){
 		var noRocks = 10;
 		rocksInfo = [];
-		for(var i = 0 ; i < noRocks ; i++){
+		for(var i = 0; i < noRocks; i++){
 			var r = document.createElement("img");
 			r.className = "rock";
 			r.id = "r"+i;
-			r.src = "images/asteroid"+get_random_num(1,5)+".png";
+			r.src = "images/asteroid" + get_random_num(1,5)+".png";
 			r.style.width = "64px";
 			r.style.height = "64px";
-			r.style.display = "none";
+			// r.style.display = "none";
 			r.style.display = "block";
 			r.style.position = "absolute";
 			newRock = {r:r}
@@ -233,9 +222,9 @@
 
 	function get_random_coor(min, max, coor){
 		if(coor == "x"){
-			return spaceCoorX[get_random_num(min,max)];	
+			return spaceCoorX[get_random_num(min,max)];
 		}else{
-			return spaceCoorY[get_random_num(min,max)];	
+			return spaceCoorY[get_random_num(min,max)];
 		}
 	}
 
@@ -245,7 +234,7 @@
 
 	function rocks_movement(){
 		allRocks = document.getElementsByClassName("rock");
-		for (var i = 0 ; i < allRocks.length ; i++){
+		for (var i = 0; i < allRocks.length; i++){
 			rocksInfo[i].rANGLE2++;
 			rocksInfo[i].rX = rocksInfo[i].rX + rocksInfo[i].rSPEED * Math.cos(rocksInfo[i].rANGLE1 * Math.PI / 180);
 			rocksInfo[i].rY = rocksInfo[i].rY + rocksInfo[i].rSPEED * Math.sin(rocksInfo[i].rANGLE1 * Math.PI / 180);
@@ -268,21 +257,20 @@
 		}
 
 		if(gameEnd){
-
 			spaceship.style.display = "none";
 			create_explosion({rX : sX, rY : sY});
 
 			var length = allRocks.length;
-			for(var i = 0;i < length;i++){
-				console.log(i);
+			for(var i = 0; i < length; i++){
+				// console.log(i);
 				var rObj = document.getElementById("r"+i);
 				space.removeChild(rObj);
 				//console.log(allRocks[j]);
 			}
 			//clearInterval(run);
 
-			var gameControls = document.getElementById("game-controls");
-			var startupImage = document.getElementById("startup-image");
+			// var gameControls = document.getElementById("game-controls");
+			// var startupImage = document.getElementById("startup-image");
 			//gameControls.style.display = "none";
 			//playBtn.style.display = "none";
 			var gameOver = document.getElementById("game-over");
@@ -293,8 +281,8 @@
 			var gameOverInterval1 = setInterval(function(){
 				time1++;
 				if(time1 > 3){
-					gameControls.style.display = "none";
-					startupImage.style.display = "none";
+					// gameControls.style.display = "none";
+					// startupImage.style.display = "none";
 					playBtn.style.display = "none";
 					gameOver.style.display = "block";
 					gameStatus.style.display = "block";
@@ -307,8 +295,8 @@
 				if(time2 > 6){
 					clearInterval(gameOverInterval2);
 					gameOver.style.display = "none";
-					gameControls.style.display = "block";
-					startupImage.style.display = "block";
+					// gameControls.style.display = "block";
+					// startupImage.style.display = "block";
 					playBtn.style.display = "block";
 				};
 			},1000);
@@ -316,7 +304,6 @@
 	}
 
 	function rock_collides_ship(ri){
-
 		if(sX + 32 < ri.rX || ri.rX + 48 < sX || sY + 32 < ri.rY || ri.rY + 48 < sY){
 			return false;
 		}
